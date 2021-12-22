@@ -1,9 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { isEmpty } from "lodash";
 import Column from "../Column/Column";
 import "./BoardContent.scss";
 
 import { Container, Draggable } from "react-smooth-dnd";
+import {
+  Container as BootstrapContainer,
+  Row,
+  Col,
+  Form,
+  Button,
+} from "react-bootstrap";
 
 import { initialData } from "../../actions/initialData";
 import { mapOrder } from "../../utilities/sorts";
@@ -12,6 +19,12 @@ import { applyDrag } from "../../utilities/dragDrop";
 export default function BoardContent() {
   const [board, setBoard] = useState({});
   const [columns, setColumns] = useState([]);
+  const [openNewColumnForm, setOpenNewColumnForn] = useState(false);
+  const newColumnInputRef = useRef(null);
+  const [newColumnTitle, setNewColumnTitle] = useState("");
+  const onNewColumnTitleChange = useCallback((e) => {
+    setNewColumnTitle(e.target.value);
+  }, []);
 
   useEffect(() => {
     const boardFormDB = initialData.boards.find(
@@ -23,6 +36,13 @@ export default function BoardContent() {
       setColumns(mapOrder(boardFormDB.columns, boardFormDB.columnsOrder, "id"));
     }
   }, []);
+
+  useEffect(() => {
+    if (newColumnInputRef && newColumnInputRef.current) {
+      newColumnInputRef.current.focus();
+      newColumnInputRef.current.select();
+    }
+  }, [openNewColumnForm]);
 
   if (isEmpty(board)) {
     return <div className="not-found">No data</div>;
@@ -53,6 +73,37 @@ export default function BoardContent() {
     }
   };
 
+  const toggleOpenNewColumnForm = () => {
+    setOpenNewColumnForn(!openNewColumnForm);
+  };
+
+  const addNewColumn = () => {
+    if (!newColumnTitle) {
+      newColumnInputRef.current.focus();
+      return;
+    }
+
+    let newColumns = [...columns];
+    const newColumnToAdd = {
+      id: Math.random().toString(36).substr(2, 5),
+      boardId: board.id,
+      title: newColumnTitle.trim(),
+      cardOrder: [],
+      cards: [],
+    };
+    newColumns.push(newColumnToAdd);
+
+    let newBoard = { ...board };
+    newBoard.columnsOrder = newColumns.map((c) => c.id);
+    newBoard.columns = newColumns;
+
+    setColumns(newColumns);
+    setBoard(newBoard);
+
+    setNewColumnTitle("");
+    toggleOpenNewColumnForm();
+  };
+
   return (
     <div className="board-content">
       <Container
@@ -72,10 +123,42 @@ export default function BoardContent() {
           </Draggable>
         ))}
       </Container>
-      <div className="add-new-column">
-        <i className="fa fa-plus icon" />
-        Add another column
-      </div>
+
+      <BootstrapContainer className="trello-container">
+        {!openNewColumnForm && (
+          <Row>
+            <Col className="add-new-column" onClick={toggleOpenNewColumnForm}>
+              <i className="fa fa-plus icon" />
+              Add another column
+            </Col>
+          </Row>
+        )}
+        {openNewColumnForm && (
+          <Row>
+            <Col className="enter-new-column">
+              <Form.Control
+                size="sm"
+                type="text"
+                placeholder="Enter column title..."
+                className="input-enter-new-column"
+                ref={newColumnInputRef}
+                value={newColumnTitle}
+                onChange={onNewColumnTitleChange}
+                onKeyDown={(event) => event.key === "Enter" && addNewColumn()}
+              />
+              <Button variant="success" size="sm" onClick={addNewColumn}>
+                Add column
+              </Button>
+              <span
+                className="cancel-new-column"
+                onClick={toggleOpenNewColumnForm}
+              >
+                <i className="fa fa-trash icon" />
+              </span>
+            </Col>
+          </Row>
+        )}
+      </BootstrapContainer>
     </div>
   );
 }
