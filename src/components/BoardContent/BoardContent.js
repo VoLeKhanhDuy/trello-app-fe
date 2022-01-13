@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { isEmpty } from "lodash";
 import Column from "../Column/Column";
 import "./BoardContent.scss";
@@ -20,11 +20,15 @@ export default function BoardContent() {
   const [board, setBoard] = useState({});
   const [columns, setColumns] = useState([]);
   const [openNewColumnForm, setOpenNewColumnForn] = useState(false);
+  const toggleOpenNewColumnForm = () => {
+    setOpenNewColumnForn(!openNewColumnForm);
+  };
+
   const newColumnInputRef = useRef(null);
   const [newColumnTitle, setNewColumnTitle] = useState("");
-  const onNewColumnTitleChange = useCallback((e) => {
+  const onNewColumnTitleChange = (e) => {
     setNewColumnTitle(e.target.value);
-  }, []);
+  };
 
   useEffect(() => {
     const boardFormDB = initialData.boards.find(
@@ -71,10 +75,6 @@ export default function BoardContent() {
 
       setColumns(newColumns);
     }
-  };
-
-  const toggleOpenNewColumnForm = () => {
-    setOpenNewColumnForn(!openNewColumnForm);
   };
 
   const addNewColumn = () => {
@@ -177,10 +177,7 @@ export default function BoardContent() {
               <Button variant="success" size="sm" onClick={addNewColumn}>
                 Add column
               </Button>
-              <span
-                className="cancel-new-column"
-                onClick={toggleOpenNewColumnForm}
-              >
+              <span className="cancel-icon" onClick={toggleOpenNewColumnForm}>
                 <i className="fa fa-trash icon" />
               </span>
             </Col>

@@ -37,6 +37,7 @@ body {
   [type="tel"].form-control:focus,
   [contenteditable].form-control:focus {
     box-shadow: inset 0 -1px 0 #ddd;
+    border: 1px solid $input-border-color;
   }
 
   .trello-content-editable {
@@ -45,9 +46,17 @@ body {
     font-size: inherit;
     font-weight: inherit;
     cursor: pointer;
-    &:focus {
-      background-color: #fff;
-      border: 1px solid $input-border-color;
+  }
+
+  span.cancel-icon {
+    margin-left: $gap;
+    cursor: pointer;
+    i {
+      font-size: 20px;
+      color: $alert-danger;
+      &:hover {
+        color: darken($alert-danger, 10);
+      }
     }
   }
 }
